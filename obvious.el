@@ -106,40 +106,39 @@ See option `obvious-overlay-properties'.")
                        (t (comment-search-forward limit t)))))
               (point-at-eoc
                (pos &optional limit)
+               (ignore limit)
                (save-excursion
                  (goto-char (point-at-boc pos))
                  (forward-comment most-positive-fixnum)
                  ;; We intentionally ignore the limit.  It seems to be necessary.
                  (point)))
-              (comment-at-header-p
+              (comment-at-file-header-p
                (pos)
-               (message "ARGH: POS:%S  POINT-MIN:%S" pos (point-min))
                (cond ((and (= (point-min) pos)
-                           (progn (message "point-min = %s" pos) t)
                            (save-excursion
                              (goto-char pos)
                              (or (looking-at-comment-p)
-                                 (message "ARGH: SEARCHING")
                                  (re-search-forward (rx (1+ space) (syntax comment-delimiter)) nil t))))
-                      (message "AT HEADER")
-                      t)) ))
-    (message "IN MATCHER AT:%S" (point))
+                      t)))
+              (comment-header-p  ;; e.g. a Lisp-style header
+               (pos) (save-excursion
+                       (goto-char pos)
+                       (looking-at-p (rx (>= 3 (syntax comment-start) ))))))
     (let ((comment-start (point-at-boc (point)))
           comment-end)
       (when comment-start
         (setf comment-end (point-at-eoc comment-start limit))
-        (message "COMMENT-START:%S" comment-start)
-        (if (and obvious-headers (comment-at-header-p comment-start))
+        (if (and obvious-headers
+                 (or (comment-at-file-header-p comment-start)
+                     (comment-header-p comment-start)))
             (progn
-              (message "IN HEADER: GOING TO:%S" (point-at-boc comment-end limit))
               (goto-char (point-at-boc comment-end limit))
               t)          
-          (message "COMMENT-START:%S  COMMENT-END:%S" comment-start comment-end)
           (set-match-data (list comment-start comment-end))
           (goto-char comment-end)
           t)))))
 
-
+;;;; Footer
 
 (provide 'obvious)
 
