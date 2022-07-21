@@ -79,6 +79,7 @@ See option `obvious-fringe'.")
 
 ;;;; Mode
 
+;;;###autoload
 (define-minor-mode obvious-mode
   "Hide comments, because what this code does is obvious."
   :lighter " Obvious"
@@ -98,7 +99,7 @@ See option `obvious-fringe'.")
   ;; <http://nschum.de/src/emacs/fringe-helper/>.
   [0 24 24 0 0 24 24 48] nil nil 'center)
 
-(defcustom obvious-fringe-bitmap obvious-fringe-bitmap
+(defcustom obvious-fringe-bitmap 'obvious-fringe-bitmap
   "Fringe bitmap used to indicate comments."
   :type '(choice (const :tag "Semi-colon" obvious-fringe-bitmap)
                  (const :tag "Right arrow" right-arrow)
