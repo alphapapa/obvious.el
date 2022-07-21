@@ -1,0 +1,29 @@
+#+TITLE: obvious.el
+
+/Who needs comments when the code is so obvious./
+
+* Screenshots
+
+#+CAPTION: Before.
+[[images/before.png]]
+
+#+CAPTION: After.
+[[images/after.png]]
+
+* COMMENT Installation
+
+* Usage
+:PROPERTIES:
+:ID:       f779f2af-cbdc-499b-8de2-cb25fa3d5f6d
+:END:
+
+When the comments are getting to you, activate ~obvious-mode~.  If you don't even want to see header comments, customize the option ~obvious-headers~.
+
+*Note:* For now, the mode should be disabled when writing a comment.
+
+* License
+:PROPERTIES:
+:ID:       51cf02b9-b8b0-485e-8025-91940980f05f
+:END:
+
+GPLv3
