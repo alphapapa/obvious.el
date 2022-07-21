@@ -25,22 +25,66 @@
 
 ;;; Code:
 
+;;;; Variables
+
 (defvar-local obvious-overlays nil
   "Overlays used to hide comments.")
 
+(defvar obvious-font-lock-keywords
+  '((;; MATCHER
+     obvious-matcher
+     ;; HIGHLIGHTERS
+     (0 ;; SUBEXP
+      ;; FACESPEC
+      (let ((overlay (make-overlay (match-beginning 0) (match-end 0))))
+        (cl-loop for (property . value) in obvious-overlay-properties
+                 do (overlay-put overlay property value))
+        (push overlay obvious-overlays)
+        ;; Return nil.
+        nil))))
+  "Font-lock keywords used in `obvious-mode'.")
+
 (defvar font-lock-end)
+
+;;;; Customization
 
 (defgroup obvious nil
   "Who needs comments when the code is so obvious."
-  ;; FIXME: Other properties.
-  )
+  :group 'tools)
 
 (defcustom obvious-headers t
   "Keep file headers visible.
 That is, don't hide comments at the beginning of the file, before
 any code."
-  ;; FIXME: Make this work.
   :type 'boolean)
+
+(defface obvious-face '((t :height 0.5 :extend t))
+  "Face applied to comments when so-configured.
+See option `obvious-overlay-properties'.")
+
+(defcustom obvious-overlay-properties
+  '((invisible . t))
+  "Alist of properties to apply to comment overlays."
+  :type '(choice (const :tag "Invisible" ((invisible . t)))
+                 (alist :tag "Custom properties" :key-type sexp :value-type sexp)))
+
+;;;; Mode
+
+(define-minor-mode obvious-mode
+  "Hide comments, because what this code does is obvious."
+  :lighter " Obvious"
+  (if obvious-mode
+      (progn
+        (font-lock-add-keywords nil obvious-font-lock-keywords 'append)
+        (font-lock-flush))
+    ;; Disable mode.
+    (font-lock-remove-keywords nil obvious-font-lock-keywords)
+    (dolist (overlay obvious-overlays)
+      (delete-overlay overlay))
+    (setf obvious-overlays nil)
+    (font-lock-flush)))
+
+;;;; Functions
 
 (defun obvious-matcher (limit)
   (cl-labels ((in-comment-p
@@ -66,44 +110,36 @@ any code."
                  (goto-char (point-at-boc pos))
                  (forward-comment most-positive-fixnum)
                  ;; We intentionally ignore the limit.  It seems to be necessary.
-                 (point))))
+                 (point)))
+              (comment-at-header-p
+               (pos)
+               (message "ARGH: POS:%S  POINT-MIN:%S" pos (point-min))
+               (cond ((and (= (point-min) pos)
+                           (progn (message "point-min = %s" pos) t)
+                           (save-excursion
+                             (goto-char pos)
+                             (or (looking-at-comment-p)
+                                 (message "ARGH: SEARCHING")
+                                 (re-search-forward (rx (1+ space) (syntax comment-delimiter)) nil t))))
+                      (message "AT HEADER")
+                      t)) ))
     (message "IN MATCHER AT:%S" (point))
     (let ((comment-start (point-at-boc (point)))
           comment-end)
       (when comment-start
         (setf comment-end (point-at-eoc comment-start limit))
-        (message "COMMENT-START:%S  COMMENT-END:%S" comment-start comment-end)
-        (set-match-data (list comment-start comment-end))
-        (goto-char comment-end)
-        t))))
+        (message "COMMENT-START:%S" comment-start)
+        (if (and obvious-headers (comment-at-header-p comment-start))
+            (progn
+              (message "IN HEADER: GOING TO:%S" (point-at-boc comment-end limit))
+              (goto-char (point-at-boc comment-end limit))
+              t)          
+          (message "COMMENT-START:%S  COMMENT-END:%S" comment-start comment-end)
+          (set-match-data (list comment-start comment-end))
+          (goto-char comment-end)
+          t)))))
 
-(defvar obvious-font-lock-keywords
-  '((;; MATCHER
-     obvious-matcher
-     ;; HIGHLIGHTERS
-     (0 ;; SUBEXP
-      ;; FACESPEC
-      (let ((overlay (make-overlay (match-beginning 0) (match-end 0))))
-        (message "ARGH: %S  %S" (match-beginning 0) (match-end 0))
-        (overlay-put overlay :obvious t)
-        (overlay-put overlay 'invisible t)
-        (push overlay obvious-overlays)
-        ;; Return nil.
-        nil)))))
 
-(define-minor-mode obvious-mode
-  "Hide comments, because what this code does is obvious."
-  :lighter " Obvious"
-  (if obvious-mode
-      (progn
-        (font-lock-add-keywords nil obvious-font-lock-keywords 'append)
-        (font-lock-flush))
-    ;; Disable mode.
-    (font-lock-remove-keywords nil obvious-font-lock-keywords)
-    (dolist (overlay obvious-overlays)
-      (delete-overlay overlay))
-    (setf obvious-overlays nil)
-    (font-lock-flush)))
 
 (provide 'obvious)
 
