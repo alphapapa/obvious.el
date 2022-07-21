@@ -37,6 +37,9 @@
      (0 ;; SUBEXP
       ;; FACESPEC
       (let ((overlay (make-overlay (match-beginning 0) (match-end 0))))
+        (when obvious-fringe
+          (obvious-fringe overlay (buffer-substring-no-properties
+                                   (match-beginning 0) (match-end 0))))
         (cl-loop for (property . value) in obvious-overlay-properties
                  do (overlay-put overlay property value))
         (push overlay obvious-overlays)
@@ -58,15 +61,21 @@ That is, don't hide comments at the beginning of the file, before
 any code."
   :type 'boolean)
 
-(defface obvious-face '((t :height 0.5 :extend t))
-  "Face applied to comments when so-configured.
-See option `obvious-overlay-properties'.")
+(defcustom obvious-fringe t
+  "Indicate comments in the fringe."
+  :type 'boolean)
 
 (defcustom obvious-overlay-properties
   '((invisible . t))
   "Alist of properties to apply to comment overlays."
   :type '(choice (const :tag "Invisible" ((invisible . t)))
                  (alist :tag "Custom properties" :key-type sexp :value-type sexp)))
+
+;;;;; Faces
+
+(defface obvious-fringe-face '((t :inherit font-lock-comment-face))
+  "Face applied to fringe bitmaps when so-configured.
+See option `obvious-fringe'.")
 
 ;;;; Mode
 
@@ -84,7 +93,26 @@ See option `obvious-overlay-properties'.")
     (setf obvious-overlays nil)
     (font-lock-flush)))
 
+(define-fringe-bitmap 'obvious-fringe-bitmap
+  ;; With thanks to the package `fringe-helper':
+  ;; <http://nschum.de/src/emacs/fringe-helper/>.
+  [0 24 24 0 0 24 24 48] nil nil 'center)
+
+(defcustom obvious-fringe-bitmap obvious-fringe-bitmap
+  "Fringe bitmap used to indicate comments."
+  :type '(choice (const :tag "Semi-colon" obvious-fringe-bitmap)
+                 (const :tag "Right arrow" right-arrow)
+                 (symbol :tag "Specified fringe (see `(elisp) Fringe Bitmaps')")
+                 (vector :tag "Custom bitmap")))
+
 ;;;; Functions
+
+(defun obvious-fringe (overlay string)
+  "Make OVERLAY display in the fringe with STRING in its help-echo."
+  (overlay-put
+   overlay 'before-string
+   (propertize
+    " " 'display `(left-fringe ,obvious-fringe-bitmap obvious-fringe-face))))
 
 (defun obvious-matcher (limit)
   (cl-labels ((in-comment-p
@@ -132,8 +160,11 @@ See option `obvious-overlay-properties'.")
                  (or (comment-at-file-header-p comment-start)
                      (comment-header-p comment-start)))
             (progn
+              ;; A header comment: skip past it and return non-nil.
               (goto-char (point-at-boc comment-end limit))
-              t)          
+              t)
+          ;; Not showing headers, or a non-header comment: set match
+          ;; data, move past it, and return non-nil.
           (set-match-data (list comment-start comment-end))
           (goto-char comment-end)
           t)))))
