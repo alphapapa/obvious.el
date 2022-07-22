@@ -25,6 +25,8 @@
 
 ;;; Code:
 
+;; TODO: Option to keep showing the first line of comments.
+
 ;;;; Variables
 
 (defvar-local obvious-overlays nil
