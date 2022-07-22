@@ -66,6 +66,12 @@ any code."
   "Indicate comments in the fringe."
   :type 'boolean)
 
+(defcustom obvious-preserve-blank-lines t
+  "Preserve newline characters.
+Otherwise, when a comment runs to the end of a line, the newline
+and following whitespace will be hidden."
+  :type 'boolean)
+
 (defcustom obvious-overlay-properties
   '((invisible . t))
   "Alist of properties to apply to comment overlays."
@@ -138,8 +144,18 @@ See option `obvious-fringe'.")
                (save-excursion
                  (goto-char (point-at-boc pos))
                  (forward-comment most-positive-fixnum)
+                 (when (and obvious-preserve-blank-lines
+                            (not (comment-only-line-p pos)))
+                   (re-search-backward (rx (not space)))
+                   (when (bolp)
+                     (forward-line -1))
+                   (goto-char (point-at-eol)))
                  ;; We intentionally ignore the limit.  It seems to be necessary.
                  (point)))
+              (comment-only-line-p
+               (pos) (save-excursion
+                       (goto-char pos)
+                       (looking-back (rx bol (0+ blank)) (point-min))))
               (comment-at-file-header-p
                (pos)
                (cond ((and (= (point-min) pos)
@@ -166,7 +182,9 @@ See option `obvious-fringe'.")
           ;; Not showing headers, or a non-header comment: set match
           ;; data, move past it, and return non-nil.
           (set-match-data (list comment-start comment-end))
-          (goto-char comment-end)
+          (goto-char (if obvious-preserve-blank-lines
+                         (1+ comment-end)
+                       comment-end))
           t)))))
 
 ;;;; Footer
