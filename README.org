@@ -4,10 +4,10 @@
 
 * Screenshots
 
-#+CAPTION: Before.
+Before:
 [[images/before.png]]
 
-#+CAPTION: After.
+After:
 [[images/after.png]]
 
 * COMMENT Installation
