@@ -40,8 +40,7 @@
       ;; FACESPEC
       (let ((overlay (make-overlay (match-beginning 0) (match-end 0))))
         (when obvious-fringe
-          (obvious-fringe overlay (buffer-substring-no-properties
-                                   (match-beginning 0) (match-end 0))))
+          (obvious-fringe overlay))
         (cl-loop for (property . value) in obvious-overlay-properties
                  do (overlay-put overlay property value))
         (push overlay obvious-overlays)
@@ -108,8 +107,8 @@ See option `obvious-fringe'.")
 
 ;;;; Functions
 
-(defun obvious-fringe (overlay string)
-  "Make OVERLAY display in the fringe with STRING in its help-echo."
+(defun obvious-fringe (overlay)
+  "Make OVERLAY display in the fringe."
   (overlay-put
    overlay 'before-string
    (propertize
@@ -119,7 +118,7 @@ See option `obvious-fringe'.")
   (cl-labels ((in-comment-p
                () (pcase-let ((`( _depth _list-start _lcst-start _stringp
                                   ,in-comment-p _after-quote _mpd _comment-style
-                                  ,comment-start _open-paren-poss _2cc-pos . _rest)
+                                  ,_comment-start _open-paren-poss _2cc-pos . _rest)
                                (syntax-ppss)))
                     in-comment-p))
               (looking-at-comment-p
