@@ -151,7 +151,7 @@ See option `obvious-fringe'.")
               (comment-header-p  ;; e.g. a Lisp-style header
                (pos) (save-excursion
                        (goto-char pos)
-                       (looking-at-p (rx (>= 3 (syntax comment-start) ))))))
+                       (looking-at-p (rx (>= 3 (syntax comment-start)))))))
     (let ((comment-start (point-at-boc (point)))
           comment-end)
       (when comment-start

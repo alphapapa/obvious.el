@@ -5,9 +5,11 @@
 * Screenshots
 
 Before:
+
 [[images/before.png]]
 
 After:
+
 [[images/after.png]]
 
 * COMMENT Installation
