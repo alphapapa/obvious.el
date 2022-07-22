@@ -73,6 +73,17 @@ any code."
   :type '(choice (const :tag "Invisible" ((invisible . t)))
                  (alist :tag "Custom properties" :key-type sexp :value-type sexp)))
 
+(define-fringe-bitmap 'obvious-fringe-bitmap
+  ;; With thanks to the package `fringe-helper':
+  ;; <http://nschum.de/src/emacs/fringe-helper/>.
+  [0 24 24 0 0 24 24 48] nil nil 'center)
+
+(defcustom obvious-fringe-bitmap 'obvious-fringe-bitmap
+  "Fringe bitmap used to indicate comments."
+  :type '(choice (const :tag "Semi-colon" obvious-fringe-bitmap)
+                 (const :tag "Right arrow" right-arrow)
+                 (symbol :tag "Specified fringe (see `(elisp) Fringe Bitmaps')")))
+
 ;;;;; Faces
 
 (defface obvious-fringe-face '((t :inherit font-lock-comment-face))
@@ -91,22 +102,9 @@ See option `obvious-fringe'.")
         (font-lock-flush))
     ;; Disable mode.
     (font-lock-remove-keywords nil obvious-font-lock-keywords)
-    (dolist (overlay obvious-overlays)
-      (delete-overlay overlay))
+    (mapc #'delete-overlay obvious-overlays)
     (setf obvious-overlays nil)
     (font-lock-flush)))
-
-(define-fringe-bitmap 'obvious-fringe-bitmap
-  ;; With thanks to the package `fringe-helper':
-  ;; <http://nschum.de/src/emacs/fringe-helper/>.
-  [0 24 24 0 0 24 24 48] nil nil 'center)
-
-(defcustom obvious-fringe-bitmap 'obvious-fringe-bitmap
-  "Fringe bitmap used to indicate comments."
-  :type '(choice (const :tag "Semi-colon" obvious-fringe-bitmap)
-                 (const :tag "Right arrow" right-arrow)
-                 (symbol :tag "Specified fringe (see `(elisp) Fringe Bitmaps')")
-                 (vector :tag "Custom bitmap")))
 
 ;;;; Functions
 
