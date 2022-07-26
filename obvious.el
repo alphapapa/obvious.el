@@ -38,9 +38,15 @@
      ;; HIGHLIGHTERS
      (0 ;; SUBEXP
       ;; FACESPEC
-      (let ((overlay (make-overlay (match-beginning 0) (match-end 0))))
-        (when obvious-fringe
-          (obvious-fringe overlay))
+      (let ((overlay (make-overlay (match-beginning 0) (match-end 0)))
+            (place 'after-string))
+        (when obvious-style
+          (when (save-match-data
+                  (obvious--comment-only-line-p (match-beginning 0)))
+            (setf place 'before-string))
+          (funcall obvious-style overlay (buffer-substring-no-properties
+                                          (match-beginning 0) (match-end 0))
+                   place))
         (cl-loop for (property . value) in obvious-overlay-properties
                  do (overlay-put overlay property value))
         (push overlay obvious-overlays)
@@ -89,6 +95,12 @@ and following whitespace will be hidden."
                  (const :tag "Right arrow" right-arrow)
                  (symbol :tag "Specified fringe (see `(elisp) Fringe Bitmaps')")))
 
+(defcustom obvious-style #'obvious-after
+  "FIXME: Docstring."
+  :type '(choice (const :tag "In fringe (no help-echo)" obvious-fringe)
+                 (const :tag "At end of line (with help-echo)" obvious-after)
+                 (const :tag "None (just hide comments)" nil)))
+
 ;;;;; Faces
 
 (defface obvious-fringe-face '((t :inherit font-lock-comment-face))
@@ -113,12 +125,33 @@ See option `obvious-fringe'.")
 
 ;;;; Functions
 
-(defun obvious-fringe (overlay)
+(defun obvious-fringe (overlay _string _place)
   "Make OVERLAY display in the fringe."
   (overlay-put
    overlay 'before-string
    (propertize
     " " 'display `(left-fringe ,obvious-fringe-bitmap obvious-fringe-face))))
+
+(defun obvious-after (overlay help-echo place)
+  "Make OVERLAY display with HELP-ECHO at the end of the line."
+  (overlay-put
+   overlay place
+   (concat (propertize
+            ";" 'face 'obvious-after-face)
+           (propertize " "
+                       'display `(space :align-to ,(1- (overlay-start overlay))))))
+  (overlay-put overlay 'help-echo help-echo))
+
+(defface obvious-after-face '((t :inherit font-lock-comment-face))
+  "Face for end-of-line comment indicators.")
+
+(defun obvious--comment-only-line-p (pos)
+  "Return non-nil if only whitespace exists before POS on its line."
+  ;; FIXME: Deduplicate this with the labeled function in the matcher.
+  (unless (< pos (point-min))
+    (save-excursion
+      (goto-char pos)
+      (looking-back (rx bol (0+ blank)) (point-min)))))
 
 (defun obvious-matcher (limit)
   (cl-labels ((in-comment-p
@@ -164,7 +197,7 @@ See option `obvious-fringe'.")
                              (or (looking-at-comment-p)
                                  (re-search-forward (rx (1+ space) (syntax comment-delimiter)) nil t))))
                       t)))
-              (comment-header-p  ;; e.g. a Lisp-style header
+              (comment-header-p ;; e.g. a Lisp-style header
                (pos) (save-excursion
                        (goto-char pos)
                        (looking-at-p (rx (>= 3 (syntax comment-start)))))))
