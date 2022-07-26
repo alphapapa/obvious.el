@@ -12,20 +12,21 @@ After:
 
 [[images/after.png]]
 
-* COMMENT Installation
+* Installation
+
+Add =obvious.el= to your ~load-path~, then ~(require 'obvious)~ and enable ~obvious-mode~.
 
 * Usage
-:PROPERTIES:
-:ID:       f779f2af-cbdc-499b-8de2-cb25fa3d5f6d
-:END:
 
 When the comments are getting to you, activate ~obvious-mode~.  If you don't even want to see header comments, customize the option ~obvious-headers~.
 
 *Note:* For now, the mode should be disabled when writing a comment.
 
+* Credits
+
+Inspired by Anders Lindgren's [[https://github.com/Lindydancer/nocomments-mode][nocomments-mode]] (which works differently, by preserving whitespace where comments are).
+
 * License
-:PROPERTIES:
-:ID:       51cf02b9-b8b0-485e-8025-91940980f05f
-:END:
 
 GPLv3
+
