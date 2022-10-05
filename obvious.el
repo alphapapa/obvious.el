@@ -27,6 +27,10 @@
 
 ;; TODO: Option to keep showing the first line of comments.
 
+;; FIXME: Adjust overlay advance settings, because currently,
+;; modifying the buffer contents seems to unintentionally overwrite
+;; comments sometimes.
+
 ;;;; Variables
 
 (defvar-local obvious-overlays nil
