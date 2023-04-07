@@ -3,6 +3,10 @@
 ;; Copyright (C) 2022  Adam Porter
 
 ;; Author: Adam Porter <adam@alphapapa.net>
+;; Maintainer: Adam Porter <adam@alphapapa.net>
+;; URL: https://github.com/alphapapa/obvious.el
+;; Version: 0.1-pre
+;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: convenience
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -20,10 +24,15 @@
 
 ;;; Commentary:
 
-;; Inspired by Anders Lindgren's `nocomments-mode':
+;; Inspired by Anders Lindgren's `nocomments-mode' (which works
+;; differently, by preserving whitespace where comments are):
 ;; <https://github.com/Lindydancer/nocomments-mode>.
 
 ;;; Code:
+
+;;;; Requirements
+
+(require 'cl-lib)
 
 ;; TODO: Option to keep showing the first line of comments.
 
@@ -58,7 +67,9 @@
 
 (defgroup obvious nil
   "Who needs comments when the code is so obvious."
-  :group 'tools)
+  :group 'tools
+  :link '(url-link "https://github.com/alphapapa/obvious.el")
+  :link '(emacs-library-link "obvious"))
 
 (defcustom obvious-headers t
   "Keep file headers visible.
@@ -125,6 +136,8 @@ See option `obvious-fringe'.")
     " " 'display `(left-fringe ,obvious-fringe-bitmap obvious-fringe-face))))
 
 (defun obvious-matcher (limit)
+  "Font-lock matching function.
+Matches up to LIMIT."
   (cl-labels ((in-comment-p
                () (pcase-let ((`( _depth _list-start _lcst-start _stringp
                                   ,in-comment-p _after-quote _mpd _comment-style
