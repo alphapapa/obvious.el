@@ -22,6 +22,12 @@ When the comments are getting to you, activate ~obvious-mode~.  If you don't eve
 
 *Note:* For now, the mode should be disabled when writing a comment.
 
+* Changelog
+
+** v0.1
+
+Initial release.
+
 * Credits
 
 Inspired by Anders Lindgren's [[https://github.com/Lindydancer/nocomments-mode][nocomments-mode]] (which works differently, by preserving whitespace where comments are).

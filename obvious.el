@@ -5,7 +5,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Maintainer: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/obvious.el
-;; Version: 0.1-pre
+;; Version: 0.1
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: convenience
 
